@@ -31,3 +31,5 @@ mod back_of_house {
 
     fn cook_order() {}
 }
+
+fn main() {}

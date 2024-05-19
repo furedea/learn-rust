@@ -1,5 +1,7 @@
 use std::cmp::PartialOrd;
+use std::fmt;
 use std::fmt::Display;
+use std::ops::Add;
 
 fn main() {
     // let s = "Здравствуйте";
@@ -15,6 +17,31 @@ fn main() {
     let i = ImportantExcerpt {
         part: first_sentence,
     };
+
+    let screen = Screen {
+        components: vec![
+            Box::new(SelectBox {
+                width: 75,
+                height: 10,
+                options: vec![
+                    String::from("Yes"),
+                    String::from("Maybe"),
+                    String::from("No"),
+                ],
+            }),
+            Box::new(Button {
+                width: 50,
+                height: 10,
+                label: String::from("OK"),
+            }),
+        ],
+    };
+    screen.run();
+
+    println!("A baby dog is called a {}", <Dog as Animal>::baby_name());
+
+    let w = Wrapper(vec![String::from("hello"), String::from("world")]);
+    println!("w = {}", w);
 }
 
 fn largest<T: PartialOrd + Copy>(list: &[T]) -> T {
@@ -44,15 +71,26 @@ impl Point<f32, f32> {
     }
 }
 
-enum Option<T> {
-    Some(T),
-    None,
+impl Add for Point<i32, i32> {
+    type Output = Point<i32, i32>;
+
+    fn add(self, other: Point<i32, i32>) -> Point<i32, i32> {
+        Point {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
 }
 
-enum Result<T, E> {
-    Ok(T),
-    Err(E),
-}
+// enum Option<T> {
+//     Some(T),
+//     None,
+// }
+
+// enum Result<T, E> {
+//     Ok(T),
+//     Err(E),
+// }
 
 pub trait Summary {
     fn summarize_author(&self) -> String;
@@ -125,4 +163,118 @@ fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
 
 struct ImportantExcerpt<'a> {
     part: &'a str,
+}
+
+trait Draw {
+    fn draw(&self);
+}
+
+struct Screen {
+    pub components: Vec<Box<dyn Draw>>,
+}
+
+impl Screen {
+    pub fn run(&self) {
+        for component in self.components.iter() {
+            component.draw();
+        }
+    }
+}
+
+struct Button {
+    width: u32,
+    height: u32,
+    label: String,
+}
+
+impl Draw for Button {
+    fn draw(&self) {}
+}
+
+struct SelectBox {
+    width: u32,
+    height: u32,
+    options: Vec<String>,
+}
+
+impl Draw for SelectBox {
+    fn draw(&self) {}
+}
+
+struct MyType {}
+// trait Iterator<T> {
+//     fn next(&mut self) -> Option<T>;
+// }
+
+// impl<T> Iterator<T> for MyType {
+//     fn next(&mut self) -> Option<T> {
+//         // 実装
+//     }
+// }
+
+// fn use_iterator<T>(iter: impl Iterator<T>) {
+//     // iterを使用
+// }
+
+// trait Iterator {
+//     type Item;
+//     fn next(&mut self) -> Option<Self::Item>;
+// }
+
+impl Iterator for MyType {
+    type Item = i32;
+    fn next(&mut self) -> Option<Self::Item> {
+        Some(1)
+    }
+}
+
+fn use_iterator(iter: impl Iterator) {}
+
+struct Millimeters(u32);
+struct Meters(u32);
+
+impl Add<Meters> for Millimeters {
+    type Output = Millimeters;
+
+    fn add(self, other: Meters) -> Millimeters {
+        Millimeters(self.0 + (other.0 * 1000))
+    }
+}
+
+trait Animal {
+    fn baby_name() -> String;
+}
+
+struct Dog;
+
+impl Dog {
+    fn baby_name() -> String {
+        String::from("Spot")
+    }
+}
+
+impl Animal for Dog {
+    fn baby_name() -> String {
+        String::from("puppy")
+    }
+}
+
+trait OutlinePrint: Display {
+    fn outline_print(&self) {
+        let output = self.to_string();
+        let len = output.len();
+        println!("{}", "*".repeat(len + 4));
+        println!("*{}*", " ".repeat(len + 2));
+        println!("* {} *", output);
+        println!("*{}*", " ".repeat(len + 2));
+        println!("{}", "*".repeat(len + 4));
+    }
+}
+
+struct Wrapper(Vec<String>);
+
+impl fmt::Display for Wrapper {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[{}]", self.0.join(", "))
+    }
 }
